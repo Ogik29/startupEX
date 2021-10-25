@@ -20,23 +20,25 @@ func main() {
 
 	userRepository := user.RepositoryBaru(db)
 	userService := user.ServiceBaru(userRepository)
-    userHandler := handler.Handlerbaru(userService)
+	userHandler := handler.Handlerbaru(userService)
 
 	router := gin.Default()
 
 	api := router.Group("/api/v1")
-	api.POST("/users", userHandler.Registeruser)
+
+	api.POST("/users", userHandler.Registeruser) //register
+	api.POST("/sessions", userHandler.Login) //Login
 
 	router.Run()
 
 	
 	
 	// service
-	// userinput := user.Register{}
+	// userinput := user.RegisterInput{}
 	// userinput.Name = "Venti"
 	// userinput.Occupation = "Archon"
 	// userinput.Email = "bartobas@gmail.com"
-	// userinput.Password = "password"
+	// userinput.Password = "sandi"
 
 	// userService.Registeruser(userinput)
 	
