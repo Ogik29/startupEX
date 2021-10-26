@@ -88,3 +88,46 @@ func (h *userHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 	
 }
+
+
+// Chech email endpoint : untuk mengetahui apakah email sudah terdaftar / belum
+func (h *userHandler) CheckEmailAvailable(c *gin.Context) {
+	// ada inputan email dari user
+	// inputan email di mapping ke struct input
+	// struct input dipassing ke service
+	// service akan memanggil repository email sudah terdaftar atau belum
+	// repository mengecek ke db 
+
+	var input user.CheckEmailInput
+
+	error := c.ShouldBindJSON(&input)
+	if error != nil {
+		errors := helper.FormatValidationErrors(error)
+		errormessage := gin.H{"errors": errors}
+
+		response := helper.APIresponse("Checking email failed", http.StatusUnprocessableEntity, "Eror", errormessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	isEmailAvailable, error := h.userService.IsEmailAvailable(input)
+	if error != nil {
+		errormessage := gin.H{"errors": "Terjadi kesalahan"}
+        response := helper.APIresponse("Checking email failed", http.StatusUnprocessableEntity, "Eror", errormessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{
+		"is_available": isEmailAvailable,
+	}
+
+	metamessage := "Email has been registered"
+	if isEmailAvailable {
+		metamessage = "Email is available"
+	}
+
+	response := helper.APIresponse(metamessage, http.StatusOK, "Sukses", data)
+	c.JSON(http.StatusOK, response)
+
+}
