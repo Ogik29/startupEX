@@ -10,6 +10,7 @@ type Service interface {
 	Registeruser(input RegisterInput) (User, error)
 	Login(input LoginInput) (User, error)
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
+	SaveAvatar(ID int, fileLocation string) (User, error)
 }
 
 type service struct {
@@ -20,6 +21,8 @@ func ServiceBaru(repository Repository) *service {
 	return &service{repository}
 }
 
+
+// Register endpoint
 func (s *service) Registeruser(input RegisterInput) (User, error) {
 	user := User{}
 	user.Name = input.Name
@@ -75,4 +78,26 @@ func (s *service) IsEmailAvailable(input CheckEmailInput) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+
+// Avatar endpoint
+func (s *service) SaveAvatar(ID int, fileLocation string) (User, error) {
+	// dapatkan user melalui ID
+	// update atribut avatar file name
+	// simpan perubahan avatar file name
+
+	user, error := s.repository.FindbyID(ID)
+	if error != nil {
+		return user, error
+	}
+
+	user.AvatarFileName = fileLocation
+
+	updatedUser, error := s.repository.Update(user)
+	if error != nil {
+		return updatedUser, error
+	}
+
+	return updatedUser, nil
 }
