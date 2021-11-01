@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bwastartup/auth"
 	"bwastartup/helper"
 	"bwastartup/user"
 	"fmt"
@@ -11,10 +12,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func Handlerbaru(userService user.Service) *userHandler{
-	return &userHandler{userService}
+func HandlerBaru(userService user.Service, authService auth.Service) *userHandler{
+	return &userHandler{userService, authService}
 }
 
 
@@ -44,7 +46,14 @@ func (h *userHandler) Registeruser(c *gin.Context) {
 		return
 	}
 
-	formatter := user.Formatuser(newuser, "token(tumbal :v)")
+	token, error := h.authService.GenerateToken(newuser.ID, newuser.Name, newuser.Email)
+	if error != nil{
+		response := helper.APIresponse("Akun gagal terbuat", http.StatusBadRequest, "Eror", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := user.Formatuser(newuser, token)
 
 	response := helper.APIresponse("Akun sudah terbuat", http.StatusOK, "Sukses", formatter)
 	
@@ -84,7 +93,16 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	formatter := user.Formatuser(loggedinuser, "token(tumbal :v)")
+	token, error := h.authService.GenerateToken(loggedinuser.ID, loggedinuser.Name, loggedinuser.Email)
+	if error != nil {
+		errormessage := gin.H{"errors": error.Error()}
+
+		response := helper.APIresponse("Login gagal", http.StatusUnprocessableEntity, "Eror", errormessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	formatter := user.Formatuser(loggedinuser, token)
 
 	response := helper.APIresponse("Login sukses", http.StatusOK, "Sukses", formatter)
 	

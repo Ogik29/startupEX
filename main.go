@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bwastartup/auth"
 	"bwastartup/handler"
 	"bwastartup/user"
 	"log"
@@ -20,7 +21,8 @@ func main() {
 
 	userRepository := user.RepositoryBaru(db)
 	userService := user.ServiceBaru(userRepository)
-	userHandler := handler.Handlerbaru(userService)
+	authService := auth.ServiceBaru()
+	userHandler := handler.HandlerBaru(userService, authService)
 
 	router := gin.Default()
 
@@ -32,31 +34,6 @@ func main() {
 	api.POST("/avatars", userHandler.UploadAvatar) //avatar
 
 	router.Run()
-
-	
-	
-	// service
-	// userinput := user.RegisterInput{}
-	// userinput.Name = "Venti"
-	// userinput.Occupation = "Archon"
-	// userinput.Email = "bartobas@gmail.com"
-	// userinput.Password = "sandi"
-
-	// userService.Registeruser(userinput)
-	
-
-	// Repository
-	// user := user.User {
-	// 	ID: 3,
-	// 	Name: "Ei",
-	// 	Occupation: "Archon",
-	// 	Email: "Ei@gmail.com",
-	// 	PasswordHash: "test2",
-	// 	AvatarFileName: "Shogun.jpg",
-	// 	Role: "user",
-	// }
-
-	// userRepository.Save(user)
 
 }
 
