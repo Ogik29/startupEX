@@ -1,10 +1,15 @@
 // JWT generate
 package auth
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"errors"
+
+	"github.com/dgrijalva/jwt-go"
+)
 
 type Service interface {
-	GenerateToken(userID int, userName string, userEmail string) (string, error)
+	GenerateToken(userID int) (string, error)
+	ValidateToken(encodedToken string) (*jwt.Token, error)
 }
 
 type jwtService struct {
@@ -17,11 +22,9 @@ func ServiceBaru() *jwtService {
 
 var SECRET_KEY = []byte("Example_secret_key")
 
-func (s *jwtService) GenerateToken(userID int, userName string, userEmail string) (string, error) {
+func (s *jwtService) GenerateToken(userID int) (string, error) {
 	claim := jwt.MapClaims{}
 	claim["user_ID"] = userID
-	claim["user_name"] = userName
-	claim["email"] = userEmail
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 
@@ -31,4 +34,24 @@ func (s *jwtService) GenerateToken(userID int, userName string, userEmail string
 	}
 
 	return signedToken, nil
+}
+
+
+// Vaidasi token
+func (s *jwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
+	token, error := jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
+		_, ok := token.Method.(*jwt.SigningMethodHMAC) // HS256 adalah salah satu bentuk dari HMAC
+		if !ok {
+			return nil, errors.New("Invalid token")
+		}
+
+		return []byte(SECRET_KEY), nil
+	})
+
+	if error != nil {
+		return token, error
+	}
+
+	return token, nil
+
 }
