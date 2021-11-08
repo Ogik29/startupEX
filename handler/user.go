@@ -156,10 +156,10 @@ func (h *userHandler) CheckEmailAvailable(c *gin.Context) {
 
 // Avatar (foto profil) endpoint
 func (h *userHandler) UploadAvatar(c *gin.Context) {
-	// input dari use 
+	// input dari user
 	// simpan gambar di folder "images/"
 	// di service memanggil repo
-	// JWT (sementara hardcore, seakan-akan user yg login ID = 2)
+	// JWT 
 	// repo ambill data user ID = 2
 	// repo update data user, simpan lokasi file
 
@@ -171,9 +171,11 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
+	
+	// user yang melakukan request atau login
+	currentUser := c.MustGet("currentUser").(user.User)
+	userID := currentUser.ID
 
-	// sementara
-	userID := 2
 	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
 
 	error = c.SaveUploadedFile(file, path)
@@ -185,7 +187,6 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		return
 	}
     
-	// sementara
 	_, error = h.userService.SaveAvatar(userID, path)
 	if error != nil {
 		data := gin.H{"Is_uploaded": false}

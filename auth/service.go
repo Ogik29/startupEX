@@ -37,7 +37,7 @@ func (s *jwtService) GenerateToken(userID int) (string, error) {
 }
 
 
-// Vaidasi token
+// Validasi token
 func (s *jwtService) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	token, error := jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC) // HS256 adalah salah satu bentuk dari HMAC
