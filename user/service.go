@@ -29,16 +29,16 @@ func (s *service) Registeruser(input RegisterInput) (User, error) {
 	user.Name = input.Name
 	user.Occupation = input.Occupation
 	user.Email = input.Email
-	PasswordHash, error := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
-	if error != nil {
-		return user, error
+	PasswordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
+	if err != nil {
+		return user, err
 	}
 	user.PasswordHash = string(PasswordHash)
 	user.Role = "user"
 
-	newuser, error := s.repository.Save(user)
-	if error != nil {
-		return newuser, error
+	newuser, err := s.repository.Save(user)
+	if err != nil {
+		return newuser, err
 	}
 
 	return newuser, nil
@@ -51,16 +51,16 @@ func (s *service) Login(input LoginInput) (User, error) {
 	email := input.Email
 	password := input.Password
 
-	user, error := s.repository.Findbyemail(email)
-	if error != nil {
-		return user, error
+	user, err := s.repository.Findbyemail(email)
+	if err != nil {
+		return user, err
 	}
 	if user.ID == 0 {
 		return user, errors.New("No user found on that email")
 	}
-    error = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-	if error != nil {
-		return user, error
+    err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return user, err
 	}
 
 	return user, nil
@@ -71,9 +71,9 @@ func (s *service) Login(input LoginInput) (User, error) {
 // Chech email endpoint
 func (s *service) IsEmailAvailable(input CheckEmailInput) (bool, error) {
 	email := input.Email
-	user, error := s.repository.Findbyemail(email)
-	if error != nil {
-		return false, error
+	user, err := s.repository.Findbyemail(email)
+	if err != nil {
+		return false, err
 	}
 	if user.ID == 0 {
 		return true, nil
@@ -88,16 +88,16 @@ func (s *service) SaveAvatar(ID int, fileLocation string) (User, error) {
 	// update atribut avatar file name
 	// simpan perubahan avatar file name
 
-	user, error := s.repository.FindbyID(ID)
-	if error != nil {
-		return user, error
+	user, err := s.repository.FindbyID(ID)
+	if err != nil {
+		return user, err
 	}
 
 	user.AvatarFileName = fileLocation
 
-	updatedUser, error := s.repository.Update(user)
-	if error != nil {
-		return updatedUser, error
+	updatedUser, err := s.repository.Update(user)
+	if err != nil {
+		return updatedUser, err
 	}
 
 	return updatedUser, nil
@@ -106,9 +106,9 @@ func (s *service) SaveAvatar(ID int, fileLocation string) (User, error) {
 
 // Service untuk middleware avatar
 func (s *service) GetUserByID(ID int) (User, error) {
-	user, error := s.repository.FindbyID(ID) 
-	if error != nil {
-		return user, error
+	user, err := s.repository.FindbyID(ID) 
+	if err != nil {
+		return user, err
 	}
 	if user.ID == 0 {
 		return user, errors.New("No user found on that ID")

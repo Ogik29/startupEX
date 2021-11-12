@@ -2,9 +2,11 @@ package main
 
 import (
 	"bwastartup/auth"
+	"bwastartup/campaign"
 	"bwastartup/handler"
 	"bwastartup/helper"
 	"bwastartup/user"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -24,6 +26,21 @@ func main() {
 	}
 
 	userRepository := user.RepositoryBaru(db)
+	campaignRepository := campaign.RepositoryBaru(db)
+
+    campaigns, err := campaignRepository.FIndByUserID(1)
+
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println(len(campaigns))
+	for _, campaign := range campaigns {
+		fmt.Println(campaign.Name)
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println(campaign.CampaignImages[0].FileName)
+		}
+	}
+
 	userService := user.ServiceBaru(userRepository)
 	authService := auth.ServiceBaru()
 	userHandler := handler.HandlerBaru(userService, authService)
@@ -61,8 +78,8 @@ func authMiddleware (authService auth.Service, userService user.Service) gin.Han
 		}
         
 		// Validasi token
-	    token, error := authService.ValidateToken(tokenString)
-		if error != nil {
+	    token, err := authService.ValidateToken(tokenString)
+		if err != nil {
 			response := helper.APIresponse("Unauthorized", http.StatusUnauthorized, "error", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized,response)
 			return
@@ -78,8 +95,8 @@ func authMiddleware (authService auth.Service, userService user.Service) gin.Han
 
 		userID := int(claim["user_ID"].(float64))
 
-		user, error := userService.GetUserByID(userID)
-		if error != nil {
+		user, err := userService.GetUserByID(userID)
+		if err != nil {
 			response := helper.APIresponse("Unauthorized", http.StatusUnauthorized, "error", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized,response)
 			return

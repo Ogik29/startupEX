@@ -15,6 +15,7 @@ type Campaign struct {
 	slug             string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+	CampaignImages   []CampaignImage // agar table campaign dapat berelasi dengan table campaign_images
 }
 
 type CampaignImage struct {
