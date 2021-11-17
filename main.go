@@ -6,7 +6,6 @@ import (
 	"bwastartup/handler"
 	"bwastartup/helper"
 	"bwastartup/user"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -28,31 +27,23 @@ func main() {
 	userRepository := user.RepositoryBaru(db)
 	campaignRepository := campaign.RepositoryBaru(db)
 
-    campaigns, err := campaignRepository.FIndByUserID(1)
-
-	fmt.Println("debug")
-	fmt.Println("debug")
-	fmt.Println("debug")
-	fmt.Println(len(campaigns))
-	for _, campaign := range campaigns {
-		fmt.Println(campaign.Name)
-		if len(campaign.CampaignImages) > 0 {
-			fmt.Println(campaign.CampaignImages[0].FileName)
-		}
-	}
-
 	userService := user.ServiceBaru(userRepository)
+	campaignService := campaign.ServiceBaru(campaignRepository)
 	authService := auth.ServiceBaru()
-	userHandler := handler.HandlerBaru(userService, authService)
+
+	userHandler := handler.NewUserHandler(userService, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
 
 	api := router.Group("/api/v1")
 
-	api.POST("/users", userHandler.Registeruser) //Register
-	api.POST("/sessions", userHandler.Login) //Login
-	api.POST("/email_checkers", userHandler.CheckEmailAvailable) //Check email
-	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar) //avatar
+	api.POST("/users", userHandler.Registeruser) // Register
+	api.POST("/sessions", userHandler.Login) // Login
+	api.POST("/email_checkers", userHandler.CheckEmailAvailable) // Check email
+	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar) // avatar
+
+	api.GET("/campaigns", campaignHandler.GetCampains) // Campaign list
 
 	router.Run()
 

@@ -15,7 +15,7 @@ type userHandler struct {
 	authService auth.Service
 }
 
-func HandlerBaru(userService user.Service, authService auth.Service) *userHandler{
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler{
 	return &userHandler{userService, authService}
 }
 
