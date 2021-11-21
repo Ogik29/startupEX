@@ -12,7 +12,7 @@ type Campaign struct {
 	BackerCount      int
 	GoalAmount       int
 	CurrentAmount    int
-	slug             string
+	Slug             string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	CampaignImages   []CampaignImage // agar table campaign dapat berelasi dengan table campaign_images

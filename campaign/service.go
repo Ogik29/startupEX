@@ -12,6 +12,7 @@ func ServiceBaru(repository Repository) *service {
 	return &service{repository}
 }
 
+// Get Campaign (list campaign endpoint)
 func (s *service) GetCampaigns(userID int) ([]Campaign, error) {
 	if userID != 0 {
 		campaigns, err := s.repository.FIndByUserID(userID)

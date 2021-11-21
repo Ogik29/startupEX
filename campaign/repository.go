@@ -15,7 +15,7 @@ func RepositoryBaru(db *gorm.DB) *repository {
 	return &repository{db}
 }
 
-// Campaign list endpoint (All)
+// Get Campaign (All)
 func (r *repository) FindAll() ([]Campaign, error) {
 	var campaigns []Campaign
 
@@ -27,7 +27,7 @@ func (r *repository) FindAll() ([]Campaign, error) {
 	return campaigns, nil
 }
 
-// Campaign List endpoint (By ID)
+// Get Campaign (By ID)
 func (r *repository) FIndByUserID(userID int) ([]Campaign, error) {
 	var campaigns []Campaign
 

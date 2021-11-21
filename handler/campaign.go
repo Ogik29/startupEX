@@ -23,8 +23,8 @@ func NewCampaignHandler(service campaign.Service) *campaignHandler {
 	return &campaignHandler{service}
 }
 
-// api/vi/campaigns
-func (h *campaignHandler) GetCampains(c *gin.Context) {
+// get campaigns (list campaign endpoint)
+func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	userID, _ := strconv.Atoi(c.Query("user_id")) // Fungsi dari "strconv.Atoi" untuk mengconvert tipe data menjadi int
 
 	campaigns, err := h.service.GetCampaigns(userID)
@@ -34,6 +34,6 @@ func (h *campaignHandler) GetCampains(c *gin.Context) {
 		return
 	}
 
-	response := helper.APIresponse("Sukses mendapat campaign", http.StatusOK, "Sukses", campaigns)
+	response := helper.APIresponse("Sukses mendapat campaign", http.StatusOK, "Sukses", campaign.FormatCampaigns(campaigns))
     c.JSON(http.StatusOK, response)
 }

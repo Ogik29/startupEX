@@ -35,6 +35,7 @@ func main() {
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
+	router.Static("/images", "./images") // berfungsi untuk menampilkan gambar di postman
 
 	api := router.Group("/api/v1")
 
@@ -43,7 +44,7 @@ func main() {
 	api.POST("/email_checkers", userHandler.CheckEmailAvailable) // Check email
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar) // avatar
 
-	api.GET("/campaigns", campaignHandler.GetCampains) // Campaign list
+	api.GET("/campaigns", campaignHandler.GetCampaigns) // Get Campaigns
 
 	router.Run()
 
