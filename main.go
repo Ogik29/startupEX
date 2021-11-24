@@ -45,6 +45,7 @@ func main() {
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar) // avatar
 
 	api.GET("/campaigns", campaignHandler.GetCampaigns) // Get Campaigns
+	api.GET("/campaigns/:id", campaignHandler.GetCampaign) // Campaign detail
 
 	router.Run()
 
