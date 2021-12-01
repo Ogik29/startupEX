@@ -3,6 +3,7 @@ package handler
 import (
 	"bwastartup/campaign"
 	"bwastartup/helper"
+	"bwastartup/user"
 	"net/http"
 	"strconv"
 
@@ -64,4 +65,40 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 
 	response := helper.APIresponse("Campaign detail", http.StatusOK, "Sukses", campaign.FormatCampaignDetail(campaignDetail))
 	c.JSON(http.StatusOK, response)
+}
+
+
+// Create campaign emdpoint
+func (h *campaignHandler) CreateCampaign(c *gin.Context) {
+	// tangkap parameter dari user ke input struct
+    // ambil current user dari jwt/handler
+    // panggil service, parameter input struct (dan juga buat slug)
+    // panggil repository untuk simpan data campaign baru
+
+	var input campaign.CreateCampaignInput 
+	
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationErrors(err)
+		errormessage := gin.H{"errors": errors}
+
+		response := helper.APIresponse("Gagal membuat campaign", http.StatusUnprocessableEntity, "Eror", errormessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	input.User = currentUser
+
+	newCampaign, err := h.service.CreateCampaign(input)
+	if err != nil {
+		response := helper.APIresponse("Gagal membuat campaign", http.StatusBadRequest, "Eror", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIresponse("Berhasil membuat campaign", http.StatusOK, "Sukses", campaign.FormatCampaign(newCampaign))
+	c.JSON(http.StatusOK, response)
+	
 }

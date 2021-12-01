@@ -13,7 +13,7 @@ type CampaignFormatter struct {
 	Slug             string `json:"slug"`
 }
 
-// List cmpaign endpoint
+// List campaign endpoint
 func FormatCampaign(campaign Campaign) CampaignFormatter {
 	campaignFormatter := CampaignFormatter{}
 	campaignFormatter.ID = campaign.ID

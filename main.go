@@ -46,6 +46,10 @@ func main() {
 
 	api.GET("/campaigns", campaignHandler.GetCampaigns) // Get Campaigns
 	api.GET("/campaign/:id", campaignHandler.GetCampaign) // Campaign detail
+	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign) // Create campaign
+
+	// Fungsi dari "authMiddleware(authService, userService)" untuk mengetahui siapa user
+	// yang melakukan request seperti mengupload avatar/membuat campaign, dll.
 
 	router.Run()
 
