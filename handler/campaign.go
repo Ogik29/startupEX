@@ -68,7 +68,7 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 }
 
 
-// Create campaign emdpoint
+// Create campaign endpoint
 func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	// tangkap parameter dari user ke input struct
     // ambil current user dari jwt/handler
@@ -86,10 +86,11 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
-
+    
+	// berfungsi agar tau siapa user yang sedang membuat campaign
 	currentUser := c.MustGet("currentUser").(user.User)
-
-	input.User = currentUser
+    input.User = currentUser
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	newCampaign, err := h.service.CreateCampaign(input)
 	if err != nil {
@@ -101,4 +102,51 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	response := helper.APIresponse("Berhasil membuat campaign", http.StatusOK, "Sukses", campaign.FormatCampaign(newCampaign))
 	c.JSON(http.StatusOK, response)
 	
+}
+
+
+// Update campaign endpoint
+func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
+	// user memasukkan input
+	// handler
+	// mapping dari input ke input struct (ada 2 dari user dan dari uri)
+	// input dari user, dan juga input dari uri (passing ke service)
+	// service (find campaign by ID, tangkap parameter)
+	// repository update data campaign
+
+	var inputID campaign.GetCampaignDetailInput // untuk mendapatkan id campaign 
+
+	err := c.ShouldBindUri(&inputID)
+	if err != nil {
+		response := helper.APIresponse("Failed to update campaign", http.StatusBadRequest, "Eror", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	var inputData campaign.CreateCampaignInput // untuk mendapatkan data campaign yang akan di update
+	
+	err = c.ShouldBindJSON(&inputData)
+	if err != nil {
+		errors := helper.FormatValidationErrors(err)
+		errormessage := gin.H{"errors": errors}
+
+		response := helper.APIresponse("Failed to update campaign", http.StatusUnprocessableEntity, "Eror", errormessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// berfungsi agar tau siapa user yang sedang mengupdate campaign
+	currentUser := c.MustGet("currentUser").(user.User)
+    inputData.User = currentUser
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	updatedCampaign, err := h.service.UpdateCampaign(inputID, inputData)
+	if err != nil {
+		response := helper.APIresponse("Failed to update campaign", http.StatusBadRequest, "Eror", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIresponse("Success to update campaign", http.StatusOK, "Sukses", campaign.FormatCampaign(updatedCampaign))
+	c.JSON(http.StatusOK, response)
 }
