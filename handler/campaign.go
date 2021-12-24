@@ -4,17 +4,12 @@ import (
 	"bwastartup/campaign"
 	"bwastartup/helper"
 	"bwastartup/user"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
-
-// tangkap parameter di handler
-// handler ke service
-// service yang menentukan repository mana yang di panggil
-// repository: FindAll, FIndByUserID
-// db
 
 type campaignHandler struct {
 	service campaign.Service
@@ -26,6 +21,12 @@ func NewCampaignHandler(service campaign.Service) *campaignHandler {
 
 // get campaigns (list campaign endpoint)
 func (h *campaignHandler) GetCampaigns(c *gin.Context) {
+	// tangkap parameter di handler
+    // handler ke service
+    // service yang menentukan repository mana yang di panggil
+    // repository: FindAll, FIndByUserID
+    // db
+
 	userID, _ := strconv.Atoi(c.Query("user_id")) // Fungsi dari "strconv.Atoi" untuk mengconvert keluaran menjadi int
 
 	campaigns, err := h.service.GetCampaigns(userID)
@@ -135,7 +136,7 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 		return
 	}
 
-	// berfungsi agar tau siapa user yang sedang mengupdate campaign
+	// berfungsi agar tau siapa user yang sedang mengupdate campaign (Authorization)
 	currentUser := c.MustGet("currentUser").(user.User)
     inputData.User = currentUser
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -149,4 +150,67 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 
 	response := helper.APIresponse("Success to update campaign", http.StatusOK, "Sukses", campaign.FormatCampaign(updatedCampaign))
 	c.JSON(http.StatusOK, response)
+}
+
+
+// Upload campaign image endpoint 
+func (h *campaignHandler) UploadImage(c *gin.Context) {
+	// handler: tangkap input dan ubah ke struct input & save image campaign ke suatu folder
+	// service (kondisi memanggil point 2 di repository, panggil repository point 1)
+	// di repository harus melakukan 2 hal: 
+	// 1. create image/save data image ke dalam table campaign_images
+	// 2. ubah is_primary true ke false (is_primary true yang sebelumnya akan diubah menjadi false)
+
+	var input campaign.CreateCampaignImageInput
+
+	err := c.ShouldBind(&input)
+	if err != nil {
+		errors := helper.FormatValidationErrors(err)
+		errormessage := gin.H{"errors": errors}
+
+		response := helper.APIresponse("Failed to upload campaign image", http.StatusUnprocessableEntity, "Eror", errormessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// berfungsi agar tau siapa user yang sedang mengupload campaign image (Authorization)
+	currentUser := c.MustGet("currentUser").(user.User)
+    input.User = currentUser
+	userID := currentUser.ID
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		data := gin.H{"Is_uploaded": false}
+		response := helper.APIresponse("Failed to upload campaign image", http.StatusBadRequest, "Eror", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	path := fmt.Sprintf("CampaignImages/%d-%s", userID, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"Is_uploaded": false}
+		response := helper.APIresponse("Failed to upload campaign image", http.StatusBadRequest, "Eror", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	_, err = h.service.SaveCampaignImage(input, path)
+	if err != nil {
+		data := gin.H{"Is_uploaded": false}
+		response := helper.APIresponse("Failed to upload campaign image", http.StatusBadRequest, "Eror", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	data := gin.H{"Is_uploaded": true}
+	response := helper.APIresponse("Campaign image succesfuly uploaded", http.StatusOK, "Sukses", data)
+
+	c.JSON(http.StatusOK, response)
+	
 }
