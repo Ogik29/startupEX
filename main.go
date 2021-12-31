@@ -39,16 +39,16 @@ func main() {
 
 	api := router.Group("/api/v1")
 
-	api.POST("/users", userHandler.Registeruser) // Register
-	api.POST("/sessions", userHandler.Login) // Login
-	api.POST("/email_checkers", userHandler.CheckEmailAvailable) // Check email
+	api.POST("/users", userHandler.Registeruser)                                             // Register
+	api.POST("/sessions", userHandler.Login)                                                 // Login
+	api.POST("/email_checkers", userHandler.CheckEmailAvailable)                             // Check email
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar) // avatar
 
-	api.GET("/campaigns", campaignHandler.GetCampaigns) // Get Campaigns
-	api.GET("/campaign/:id", campaignHandler.GetCampaign) // Campaign detail
-	api.POST("/campaign", authMiddleware(authService, userService), campaignHandler.CreateCampaign) // Create campaign
-	api.PUT("/campaign/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign) // Update campaign
-	api.POST("/campaign-images",  authMiddleware(authService, userService), campaignHandler.UploadImage) // Upload campaign image
+	api.GET("/campaigns", campaignHandler.GetCampaigns)                                                 // Get Campaigns
+	api.GET("/campaign/:id", campaignHandler.GetCampaign)                                               // Campaign detail
+	api.POST("/campaign", authMiddleware(authService, userService), campaignHandler.CreateCampaign)     // Create campaign
+	api.PUT("/campaign/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)  // Update campaign
+	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage) // Upload campaign image
 
 	// Fungsi dari "authMiddleware(authService, userService)" untuk mengetahui siapa user
 	// yang melakukan request seperti mengupload avatar/membuat campaign, dll.
@@ -57,38 +57,37 @@ func main() {
 
 }
 
-
 // Middleware
-func authMiddleware (authService auth.Service, userService user.Service) gin.HandlerFunc {
-	return func (c *gin.Context) {
-		authHeader := c.GetHeader("Authorization") 
-	
+func authMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+
 		if !strings.Contains(authHeader, "Bearer") {
 			response := helper.APIresponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized,response)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
-		
+
 		// Bearer (spasi) token = yang diambil hanya tokennya saja
 		tokenString := ""
 		tokenArray := strings.Split(authHeader, " ")
 		if len(tokenArray) == 2 {
 			tokenString = tokenArray[1]
 		}
-        
+
 		// Validasi token
-	    token, err := authService.ValidateToken(tokenString)
+		token, err := authService.ValidateToken(tokenString)
 		if err != nil {
 			response := helper.APIresponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized,response)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
-        
+
 		claim, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok || !token.Valid {
 			response := helper.APIresponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized,response)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
@@ -97,14 +96,11 @@ func authMiddleware (authService auth.Service, userService user.Service) gin.Han
 		user, err := userService.GetUserByID(userID)
 		if err != nil {
 			response := helper.APIresponse("Unauthorized", http.StatusUnauthorized, "error", nil)
-			c.AbortWithStatusJSON(http.StatusUnauthorized,response)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
 		c.Set("currentUser", user)
-    }
-	
+	}
+
 }
-
-// Komentar tidak berguna
-
