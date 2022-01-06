@@ -5,6 +5,7 @@ import (
 	"bwastartup/campaign"
 	"bwastartup/handler"
 	"bwastartup/helper"
+	"bwastartup/transaction"
 	"bwastartup/user"
 	"log"
 	"net/http"
@@ -23,16 +24,22 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
+    
+	// repository
 	userRepository := user.RepositoryBaru(db)
 	campaignRepository := campaign.RepositoryBaru(db)
-
+	transactionRepository := transaction.RepositoryBaru(db)
+    
+	// service
 	userService := user.ServiceBaru(userRepository)
 	campaignService := campaign.ServiceBaru(campaignRepository)
 	authService := auth.ServiceBaru()
+	transactionService := transaction.ServiceBaru(transactionRepository, campaignRepository)
 
+    // handler
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	router.Static("/images", "./images") // berfungsi untuk menampilkan gambar di postman
@@ -49,6 +56,8 @@ func main() {
 	api.POST("/campaign", authMiddleware(authService, userService), campaignHandler.CreateCampaign)     // Create campaign
 	api.PUT("/campaign/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)  // Update campaign
 	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage) // Upload campaign image
+
+	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions) // Get campaign's transaction 
 
 	// Fungsi dari "authMiddleware(authService, userService)" untuk mengetahui siapa user
 	// yang melakukan request seperti mengupload avatar/membuat campaign, dll.
