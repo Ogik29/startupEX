@@ -17,7 +17,7 @@ func NewTransactionHandler(service transaction.Service) *transactionHandler {
 	return &transactionHandler{service}
 }
 
-// campaign transactions endpoint
+// get campaign transactions endpoint
 func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
 	// parameter di uri
     // tangkap parameter mapping ke input struct
@@ -47,5 +47,28 @@ func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
 	}
 
 	response := helper.APIresponse("Campaign's transaction", http.StatusOK, "Sukses", transaction.FormatCampaignTransactions(transactions))
+	c.JSON(http.StatusOK, response)
+}
+
+// get user transactions endpoint
+func (h *transactionHandler) GetUserTransactions(c *gin.Context) {
+	// handler
+	// ambil nilai user dari jwt/middleware
+	// service
+	// repo => ambil data transactions (preload campaign)
+    
+	// Authorization
+	currentUser := c.MustGet("currentUser").(user.User)
+	userID := currentUser.ID
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	transactions, err := h.service.GetTransactionsByUserID(userID)
+	if err != nil {
+		response := helper.APIresponse("Failed to get user's transaction", http.StatusBadRequest, "Eror", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIresponse("User's transaction", http.StatusOK, "Sukses", transaction.FormatUserTransactions(transactions))
 	c.JSON(http.StatusOK, response)
 }

@@ -57,7 +57,8 @@ func main() {
 	api.PUT("/campaign/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)  // Update campaign
 	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage) // Upload campaign image
 
-	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions) // Get campaign's transaction 
+	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions) // Get campaign transaction
+    api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions) // Get user transaction
 
 	// Fungsi dari "authMiddleware(authService, userService)" untuk mengetahui siapa user
 	// yang melakukan request seperti mengupload avatar/membuat campaign, dll.
