@@ -17,6 +17,7 @@ func NewTransactionHandler(service transaction.Service) *transactionHandler {
 	return &transactionHandler{service}
 }
 
+
 // get campaign transactions endpoint
 func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
 	// parameter di uri
@@ -50,6 +51,7 @@ func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+
 // get user transactions endpoint
 func (h *transactionHandler) GetUserTransactions(c *gin.Context) {
 	// handler
@@ -71,4 +73,40 @@ func (h *transactionHandler) GetUserTransactions(c *gin.Context) {
 
 	response := helper.APIresponse("User's transaction", http.StatusOK, "Sukses", transaction.FormatUserTransactions(transactions))
 	c.JSON(http.StatusOK, response)
+}
+
+
+// user create transaction endpoint 
+func (h *transactionHandler) CreateTransaction(c *gin.Context) {
+    // ada input dari user
+    // handler tangkap input terus di mapping ke input struct
+    // panggil service buat transaksi, manggil sistem midtrans
+    // panggil repository create new transaction data  
+
+	var input transaction.CreateTransactionInput 
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationErrors(err)
+		errormessage := gin.H{"errors": errors}
+
+		response := helper.APIresponse("Gagal membuat transaction", http.StatusUnprocessableEntity, "Eror", errormessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+		// Authorization
+		currentUser := c.MustGet("currentUser").(user.User)
+		input.User = currentUser
+		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+		newTransaction, err := h.service.CreateTransaction(input)
+		if err != nil {
+			response := helper.APIresponse("Gagal membuat transaction", http.StatusBadRequest, "Eror", nil)
+			c.JSON(http.StatusBadRequest, response)
+			return
+		}
+	
+		response := helper.APIresponse("Berhasil membuat transaction", http.StatusOK, "Sukses", newTransaction)
+		c.JSON(http.StatusOK, response)
 }

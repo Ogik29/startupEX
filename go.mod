@@ -28,4 +28,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/mysql v1.1.2 // indirect
 	gorm.io/gorm v1.21.16 // indirect
+	github.com/veritrans/go-midtrans v0.0.0-20210616100512-16326c5eeb00 //indirect
 )

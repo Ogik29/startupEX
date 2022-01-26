@@ -59,9 +59,10 @@ func main() {
 
 	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions) // Get campaign transaction
     api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions) // Get user transaction
+	api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction) // User create transaction endpoint
 
-	// Fungsi dari "authMiddleware(authService, userService)" untuk mengetahui siapa user
-	// yang melakukan request seperti mengupload avatar/membuat campaign, dll.
+	/* Fungsi dari "authMiddleware(authService, userService)" untuk mengetahui siapa user
+	yang melakukan request seperti mengupload avatar/membuat campaign, dll. */
 
 	router.Run()
 
