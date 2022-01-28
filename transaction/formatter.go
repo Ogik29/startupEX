@@ -33,6 +33,7 @@ func FormatCampaignTransactions(transactions []Transaction) []CampaignTransactio
 	return transactionsFormatter
 }
 
+
 // get user transactions endpoint
 type UserTransactionFormatter struct {
 	ID        int               `json:"id"`
@@ -79,4 +80,30 @@ func FormatUserTransactions(transactions []Transaction) []UserTransactionFormatt
 		transactionsFormatter = append(transactionsFormatter, formatter)
 	}
 	return transactionsFormatter
+}
+
+
+// user create transaction endpoint
+type TransactionFormatter struct {
+	ID         int      `json:"id"`
+	CampaignID int      `josn:"campaign_id"`
+	UserID     int      `json:"user_id"`
+	Amoumt     int      `json:"amount"`
+	Status     string   `json:"status"`
+	Code       string   `json:"code"`
+	PaymentURL string   `json:"payment_url"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func FormatTransaction(transaction Transaction) TransactionFormatter {
+	formatter := TransactionFormatter{}
+	formatter.ID = transaction.ID
+	formatter.CampaignID = transaction.CampaignID
+	formatter.UserID = transaction.UserID
+	formatter.Amoumt = transaction.Amount
+	formatter.Status = transaction.Status
+	formatter.Code = transaction.Code
+	formatter.PaymentURL = transaction.PaymentURL
+	formatter.CreatedAt = transaction.CreatedAt
+	return formatter
 }
