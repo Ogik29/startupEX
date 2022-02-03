@@ -13,13 +13,14 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func main() {
-	dsn := "root:@tcp(127.0.0.1:3306)/startupex?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:@tcp(127.0.0.1:3306)/bwastartup?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -44,6 +45,7 @@ func main() {
 	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
+	router.Use(cors.Default()) // (cors) untuk agar API bisa ditampilkan di client seperti javascript tidak hanya postman
 	router.Static("/images", "./images") // berfungsi untuk menampilkan gambar di postman
 
 	api := router.Group("/api/v1")
@@ -52,6 +54,7 @@ func main() {
 	api.POST("/sessions", userHandler.Login)                                                 // Login
 	api.POST("/email_checkers", userHandler.CheckEmailAvailable)                             // Check email
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar) // avatar
+	api.GET("/users/fetch", authMiddleware(authService, userService), userHandler.FetchUser) // fetch user
 
 	api.GET("/campaigns", campaignHandler.GetCampaigns)                                                 // Get Campaigns
 	api.GET("/campaign/:id", campaignHandler.GetCampaign)                                               // Campaign detail
@@ -62,6 +65,7 @@ func main() {
 	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions) // Get campaign transaction
     api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions) // Get user transaction
 	api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction) // User create transaction endpoint
+	api.POST("/transactions/notification", transactionHandler.GetNotification) // notification payment midtrans
 
 	/* Fungsi dari "authMiddleware(authService, userService)" untuk mengetahui siapa user
 	yang melakukan request seperti mengupload avatar/membuat campaign, dll. */

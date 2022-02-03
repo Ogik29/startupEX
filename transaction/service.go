@@ -4,19 +4,20 @@ import (
 	"bwastartup/campaign"
 	"bwastartup/payment"
 	"errors"
+	"strconv"
 )
 
 type service struct {
 	repository         Repository
 	campaignRepository campaign.Repository
-	paymentService     payment.Service
+	paymentService     payment.Service     
 }
 
 type Service interface {
 	GetTransactionsByCampaignID(input GetCampaignTransactionsInput) ([]Transaction, error)
 	GetTransactionsByUserID(userID int) ([]Transaction, error)
 	CreateTransaction(input CreateTransactionInput) (Transaction, error)
-
+    ProccesPayment(input TransactionNotificationInput) error
 }
 
 func ServiceBaru(repository Repository, campaignRepository campaign.Repository, paymentService payment.Service) *service {
@@ -70,7 +71,8 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 	if err != nil {
 		return newTransaction, err
 	}
-
+    
+	// memanggil sistem midtrans (payment service)
 	paymentTransaction := payment.Transaction{
 		ID:     newTransaction.ID,
 		Amount: newTransaction.Amount,
@@ -88,4 +90,47 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 	}
 
 	return newTransaction, nil
+}
+
+// notification payment midtrans
+func (s *service) ProccesPayment(input TransactionNotificationInput) error {
+	transaction_id, _ := strconv.Atoi(input.OrderID) // fungsi "strconv.Atoi()" adalah untuk mengubah data string menjadi int
+
+	transaction, err := s.repository.GetByID(transaction_id)
+	if err != nil {
+		return err
+	}
+    
+	// if use payment type credit card if capture & accept
+	if input.PaymentType == "credit_card" && input.TransactionStatus == "capture" && input.FraudStatus == "accept" {
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "settlement" { // if use other payment type (settlement not capture & accept)
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "deny" || input.TransactionStatus == "expire" || input.TransactionStatus == "cancel" {
+		transaction.Status = "cancelled"
+	}
+
+	updatedTransaction, err := s.repository.Update(transaction)
+	if err != nil {
+		return err
+	}
+
+	// cara update data campaign setelah ada transaksi yang masuk pada campaign tsb
+	campaign, err := s.campaignRepository.FindByID(updatedTransaction.CampaignID)
+	if err != nil {
+		return err
+	}
+    
+	if updatedTransaction.Status == "paid" {
+		campaign.BackerCount = campaign.BackerCount + 1
+		campaign.CurrentAmount = campaign.CurrentAmount + updatedTransaction.Amount
+
+		_, err := s.campaignRepository.Update(campaign)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }

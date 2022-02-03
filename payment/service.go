@@ -4,7 +4,7 @@ import (
 	"bwastartup/user"
 	"strconv"
 
-	midtrans "github.com/veritrans/go-midtrans"
+	"github.com/veritrans/go-midtrans"
 )
 
 type service struct {
@@ -35,7 +35,7 @@ func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string
 		},
 
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID: strconv.Itoa(transaction.ID), //fungsi "strconv.Itoa()" adalah untuk mengubah data int menjadi string
+			OrderID: strconv.Itoa(transaction.ID), // fungsi "strconv.Itoa()" adalah untuk mengubah data int menjadi string
 			GrossAmt: int64(transaction.Amount), // fungsi "int64()" adalah untuk mengubah data int biasa menjadi int64
 		},
 	}

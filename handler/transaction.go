@@ -110,3 +110,26 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context) {
 		response := helper.APIresponse("Berhasil membuat transaction", http.StatusOK, "Sukses", transaction.FormatTransaction(newTransaction))
 		c.JSON(http.StatusOK, response)
 }
+
+
+// notification payment midtrans
+func (h *transactionHandler) GetNotification(c *gin.Context) {
+	var input transaction.TransactionNotificationInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		response := helper.APIresponse("Failed to procces nitification", http.StatusBadRequest, "Eror", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+    
+	err = h.service.ProccesPayment(input)
+	if err != nil {
+		response := helper.APIresponse("Failed to procces nitification", http.StatusBadRequest, "Eror", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	c.JSON(http.StatusOK, input) 
+	// dibuat sederhana dari yang lain karena yg mengakses endpoint ini bukanlah client atau semacamnya melainkan sistem midtrans 
+}

@@ -203,3 +203,16 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 
 }
+
+
+// Fetch user: dipakai untuk mendapatkan data user yang sedang login, endpoint ini dibutuhkan dari sisi frontend khusus untuk mendapatkan data seperti itu
+func (h *userHandler) FetchUser(c *gin.Context) {
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	
+	formatter := user.Formatuser(currentUser, "")
+
+	response := helper.APIresponse("Successfuly to fetch user data", http.StatusOK, "Sukses", formatter)
+
+	c.JSON(http.StatusOK, response)
+}
